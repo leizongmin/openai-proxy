@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "openai-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "author": "LEI Zongmin <leizongmin@gmail.com>",
+  "license": "MIT"
+}
