@@ -16,12 +16,13 @@ A simple HTTP proxy server designed specifically for forwarding and logging Open
 
 ## Environment Variables
 
-| Variable   | Description                      | Default Value |
-| ---------- | -------------------------------- | ------------- |
-| PORT       | Proxy server listening port      | 8080          |
-| LOG_DIR    | Log files directory              | ./logs        |
-| MODEL_NAME | Model name to replace (optional) | -             |
-| API_SERVER | Target API server address        | Required      |
+| Variable   | Description                                                                             | Default Value |
+| ---------- | --------------------------------------------------------------------------------------- | ------------- |
+| PORT       | Proxy server listening port                                                             | 8080          |
+| LOG_DIR    | Log files directory                                                                     | ./logs        |
+| MODEL_NAME | Model name to replace (optional)                                                        | -             |
+| API_SERVER | Target API server address (format: https://domain.com, example: https://api.openai.com) | Required      |
+| API_KEY    | OpenAI API key to override the original request (optional)                              | -             |
 
 ## Quick Start
 

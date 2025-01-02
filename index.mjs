@@ -29,6 +29,12 @@ const apiUrl = new URL(apiServer);
 const apiUrlIsHttps = apiUrl.protocol === "https:";
 log("Target api server: %s", apiServer);
 
+const apiKey = (process.env.API_KEY || "").trim();
+log(
+  "Replace api key: %s",
+  apiKey ? apiKey.slice(0, 3) + "***" + apiKey.slice(-3) : ""
+);
+
 let requestCounter = 0;
 const server = http.createServer((clientReq, clientRes) => {
   const url = new URL(clientReq.url, `http://${clientReq.headers.host}`);
@@ -47,14 +53,25 @@ const server = http.createServer((clientReq, clientRes) => {
     headers: clientReq.headers,
   };
   delete options.headers.host;
-  log(`Request ${logFile}`, options);
+  log("Request %s %s", options.method, options.path);
+
+  // modify the api key
+  if (apiKey) {
+    options.headers.authorization = `Bearer ${apiKey}`;
+  }
 
   // save the request info
   const requestChunks = [];
   let requestBody;
   let requestHeaders = `${clientReq.method} ${clientReq.url} HTTP/${clientReq.httpVersion}\r\n`;
   for (const [key, value] of Object.entries(clientReq.headers)) {
-    requestHeaders += `${key}: ${value}\r\n`;
+    if (key.toLowerCase() === "authorization") {
+      const authValue = value.toString();
+      const maskedValue = authValue.slice(0, 7) + "***" + authValue.slice(-3);
+      requestHeaders += `${key}: ${maskedValue}\r\n`;
+    } else {
+      requestHeaders += `${key}: ${value}\r\n`;
+    }
   }
   requestHeaders += "\r\n";
   fs.writeFileSync(logFile, requestHeaders);
