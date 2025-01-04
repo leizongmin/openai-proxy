@@ -40,10 +40,12 @@ const server = http.createServer((clientReq, clientRes) => {
   const url = new URL(clientReq.url, `http://${clientReq.headers.host}`);
 
   requestCounter++;
-  const logFile = path.join(
-    logDir,
-    `${getDateTimeString()}_${String(requestCounter).padStart(6, "0")}.log`
-  );
+  const logFileName =
+    String(requestCounter).padStart(6, "0") +
+    "_" +
+    getDateTimeString("yyyymmdd_hhmmss");
+  const logFile = path.join(logDir, logFileName + ".log");
+  const logRequestFile = path.join(logDir, logFileName + "_request.json");
 
   const options = {
     hostname: apiUrl.hostname,
@@ -99,6 +101,10 @@ const server = http.createServer((clientReq, clientRes) => {
       // save the request body
       fs.appendFileSync(logFile, requestBody);
       fs.appendFileSync(logFile, "\n\n\n");
+      fs.writeFileSync(
+        logRequestFile,
+        JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
+      );
 
       const proxyReq = (apiUrlIsHttps ? https : http).request(
         options,
@@ -157,12 +163,18 @@ function error(...args) {
   console.error(getDateTimeString(), util.format(...args));
 }
 
-function getDateTimeString(d = new Date()) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const date = String(d.getDate()).padStart(2, "0");
-  const hours = String(d.getHours()).padStart(2, "0");
-  const minutes = String(d.getMinutes()).padStart(2, "0");
-  const seconds = String(d.getSeconds()).padStart(2, "0");
-  return `${year}-${month}-${date}_${hours}${minutes}${seconds}`;
+function getDateTimeString(format = "yyyy-mm-dd hh:mm:ss", time = new Date()) {
+  const year = time.getFullYear();
+  const month = String(time.getMonth() + 1).padStart(2, "0");
+  const date = String(time.getDate()).padStart(2, "0");
+  const hours = String(time.getHours()).padStart(2, "0");
+  const minutes = String(time.getMinutes()).padStart(2, "0");
+  const seconds = String(time.getSeconds()).padStart(2, "0");
+  return format
+    .replace(/yyyy/g, year)
+    .replace(/mm/g, month)
+    .replace(/dd/g, date)
+    .replace(/hh/g, hours)
+    .replace(/mm/g, minutes)
+    .replace(/ss/g, seconds);
 }

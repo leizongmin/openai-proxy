@@ -50,9 +50,22 @@ npm start
 ## Logging
 
 - All requests and responses are logged to the directory specified by LOG_DIR
-- Log file naming format: `YYYY-MM-DD_HHMMSS_sequence.log`
+- Log file naming format: `sequence_YYYY-MM-DD_HHMMSS.log`
+- Request body is logged to `sequence_YYYY-MM-DD_HHMMSS_request.json`
 - Each log file contains complete request headers, request body, response headers, and response body
 
 ## License
 
 MIT License
+
+## How to Contribute
+
+We welcome contributions! Here's how you can help:
+
+1. Fork the repository
+2. Create a new branch for your feature or bugfix
+3. Make your changes and commit them with clear messages
+4. Push your branch to your fork
+5. Submit a pull request to the main repository
+
+Please ensure your code follows the project's style guidelines and includes appropriate tests.
