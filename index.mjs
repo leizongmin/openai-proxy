@@ -62,6 +62,9 @@ const server = http.createServer((clientReq, clientRes) => {
     options.headers.authorization = `Bearer ${apiKey}`;
   }
 
+  // remove accept-encoding header
+  delete options.headers["accept-encoding"];
+
   // save the request info
   const requestChunks = [];
   let requestBody;
@@ -101,10 +104,12 @@ const server = http.createServer((clientReq, clientRes) => {
       // save the request body
       fs.appendFileSync(logFile, requestBody);
       fs.appendFileSync(logFile, "\n\n\n");
-      fs.writeFileSync(
-        logRequestFile,
-        JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
-      );
+      if (requestBody.length > 0) {
+        fs.writeFileSync(
+          logRequestFile,
+          JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
+        );
+      }
 
       const proxyReq = (apiUrlIsHttps ? https : http).request(
         options,
