@@ -60,6 +60,13 @@ let requestCounter = 0;
 const server = http.createServer((clientReq, clientRes) => {
   const url = new URL(clientReq.url, `http://${clientReq.headers.host}`);
 
+  // handle root path, just return a plain text
+  if (url.pathname === "/") {
+    clientRes.writeHead(200, { "Content-Type": "text/plain" });
+    clientRes.end("Server is running");
+    return;
+  }
+
   requestCounter++;
   const logFileName =
     String(requestCounter).padStart(6, "0") +
