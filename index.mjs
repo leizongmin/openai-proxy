@@ -11,9 +11,29 @@ if (!(port > 0)) {
   throw new Error(`invalid port: ${port} (env PORT=${process.env.PORT})`);
 }
 
+const logToStdout = (() => {
+  const flag = String(process.env.LOG_STDOUT).toLowerCase();
+  if (flag === "1" || flag === "true" || flag === "on") {
+    // enable log to stdout if env LOG_STDOUT is set
+    console.log("LOG_STDOUT is enabled");
+    return true;
+  } else {
+    // default: disable log to stdout
+    return false;
+  }
+})();
+
 const logDir = path.resolve(process.env.LOG_DIR || "./logs");
-if (!fs.existsSync(logDir)) {
+if (logToStdout && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
+}
+
+function appendLog(file, content) {
+  if (logToStdout) {
+    console.log(file, content.toString());
+  } else {
+    fs.appendFileSync(file, content);
+  }
 }
 
 const modelName = (process.env.MODEL_NAME || "").trim();
@@ -80,7 +100,7 @@ const server = http.createServer((clientReq, clientRes) => {
     }
   }
   requestHeaders += "\r\n";
-  fs.writeFileSync(logFile, requestHeaders);
+  appendLog(logFile, requestHeaders);
 
   clientReq.on("data", (chunk) => {
     requestChunks.push(chunk);
@@ -103,10 +123,10 @@ const server = http.createServer((clientReq, clientRes) => {
       }
 
       // save the request body
-      fs.appendFileSync(logFile, requestBody);
-      fs.appendFileSync(logFile, "\n\n\n");
+      appendLog(logFile, requestBody);
+      appendLog(logFile, "\n\n\n");
       if (requestBody.length > 0) {
-        fs.writeFileSync(
+        appendLog(
           logRequestFile,
           JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
         );
@@ -123,7 +143,7 @@ const server = http.createServer((clientReq, clientRes) => {
             responseHeaders += `${key}: ${value}\r\n`;
           }
           responseHeaders += "\r\n";
-          fs.appendFileSync(logFile, responseHeaders);
+          appendLog(logFile, responseHeaders);
 
           proxyRes.on("data", (chunk) => {
             responseChunks.push(chunk);
@@ -132,7 +152,7 @@ const server = http.createServer((clientReq, clientRes) => {
           proxyRes.on("end", () => {
             // save the response body
             responseBody = Buffer.concat(responseChunks);
-            fs.appendFileSync(logFile, responseBody);
+            appendLog(logFile, responseBody);
           });
 
           clientRes.writeHead(proxyRes.statusCode, proxyRes.headers);
@@ -142,7 +162,7 @@ const server = http.createServer((clientReq, clientRes) => {
 
       proxyReq.on("error", (err) => {
         error("Proxy request error:", err);
-        fs.appendFileSync(logFile, util.format(err));
+        appendLog(logFile, util.format(err));
         clientRes.writeHead(500);
         clientRes.end("Request error");
       });
@@ -150,7 +170,7 @@ const server = http.createServer((clientReq, clientRes) => {
       proxyReq.end(requestBody);
     } catch (err) {
       error("Process request error:", err);
-      fs.appendFileSync(logFile, util.format(err));
+      appendLog(logFile, util.format(err));
       clientRes.writeHead(500);
       clientRes.end("Internal error");
     }
