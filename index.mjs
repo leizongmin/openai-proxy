@@ -24,7 +24,7 @@ const logToStdout = (() => {
 })();
 
 const logDir = path.resolve(process.env.LOG_DIR || "./logs");
-if (logToStdout && !fs.existsSync(logDir)) {
+if (!logToStdout && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
