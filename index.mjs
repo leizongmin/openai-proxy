@@ -74,6 +74,7 @@ const server = http.createServer((clientReq, clientRes) => {
     getDateTimeString("yyyymmdd_hhmmss");
   const logFile = path.join(logDir, logFileName + ".log");
   const logRequestFile = path.join(logDir, logFileName + "_request.json");
+  const logResponseFile = path.join(logDir, logFileName + "_response.jsonl");
 
   const options = {
     hostname: apiUrl.hostname,
@@ -131,7 +132,7 @@ const server = http.createServer((clientReq, clientRes) => {
 
       // save the request body
       appendLog(logFile, requestBody);
-      appendLog(logFile, "\n\n\n");
+      appendLog(logFile, "\n\n--------------------\n");
       if (requestBody.length > 0) {
         appendLog(
           logRequestFile,
@@ -154,6 +155,14 @@ const server = http.createServer((clientReq, clientRes) => {
 
           proxyRes.on("data", (chunk) => {
             responseChunks.push(chunk);
+
+            // if stream response, save the data
+            const chunkLines = chunk.toString().split("\n");
+            for (const line of chunkLines) {
+              if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                appendLog(logResponseFile, line.slice(6).trim() + "\n");
+              }
+            }
           });
 
           proxyRes.on("end", () => {
