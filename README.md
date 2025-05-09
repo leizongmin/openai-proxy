@@ -20,6 +20,7 @@ A simple HTTP proxy server designed specifically for forwarding and logging Open
 | ---------- | --------------------------------------------------------------------------------------- | ------------- |
 | PORT       | Proxy server listening port                                                             | 8080          |
 | LOG_DIR    | Log files directory                                                                     | ./logs        |
+| LOG_STDOUT | Enable logging to stdout instead of files (values: 1/true/on)                           | false         |
 | MODEL_NAME | Model name to replace (optional)                                                        | -             |
 | API_SERVER | Target API server address (format: https://domain.com, example: https://api.openai.com) | Required      |
 | API_KEY    | OpenAI API key to override the original request (optional)                              | -             |
