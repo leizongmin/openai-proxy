@@ -63,7 +63,7 @@ const server = http.createServer((clientReq, clientRes) => {
   // handle root path, just return a plain text
   if (url.pathname === "/") {
     clientRes.writeHead(200, { "Content-Type": "text/plain" });
-    clientRes.end("Server is running");
+    clientRes.end("Server is running, uptime: " + process.uptime() + "s");
     return;
   }
 
