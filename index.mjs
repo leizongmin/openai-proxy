@@ -89,7 +89,12 @@ const server = http.createServer((clientReq, clientRes) => {
     headers: clientReq.headers,
   };
   delete options.headers.host;
-  log("Request %s %s", options.method, options.path);
+  log(
+    "Request %s %s from %s",
+    options.method,
+    options.path,
+    clientReq.socket.remoteAddress
+  );
 
   // modify the api key
   if (apiKey) {
