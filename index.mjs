@@ -127,15 +127,53 @@ const server = http.createServer((clientReq, clientRes) => {
   clientReq.on("end", () => {
     try {
       requestBody = Buffer.concat(requestChunks);
-      // if json request, modify the model name
+      // if json request, rewrite it
       if (
         clientReq.headers["content-type"]?.includes("application/json") &&
         requestBody.length > 0
       ) {
         const data = JSON.parse(requestBody.toString());
+
+        // modify the model name
         if (modelName && data.model) {
           data.model = modelName;
+          log("Rewrite model name: %s", data.model);
         }
+
+        // normalize the prompt
+        if (Array.isArray(data.system)) {
+          data.messages.unshift({
+            role: "system",
+            content: data.system,
+          });
+          delete data.system;
+          log("Rewrite system to messages");
+        }
+
+        // normalize the tools
+        if (
+          Array.isArray(data.tools) &&
+          data.tools.length > 0 &&
+          typeof data.tools[0].name === "string"
+        ) {
+          for (let i = 0; i < data.tools.length; i++) {
+            const tool = data.tools[i];
+            tool.parameters = tool.input_schema;
+            delete tool.input_schema;
+            data.tools[i] = {
+              type: "function",
+              function: tool,
+            };
+          }
+          log("Rewrite tools format: %d", data.tools.length);
+        }
+
+        // normalize the tool choice
+        if (data.tool_choice && typeof data.tool_choice.type === "string") {
+          data.tool_choice = data.tool_choice.type;
+          log("Rewrite tool_choice to string: %s", data.tool_choice);
+        }
+
         requestBody = Buffer.from(JSON.stringify(data));
         options.headers["content-length"] = requestBody.length;
       }
