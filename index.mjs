@@ -56,6 +56,25 @@ log(
   apiKey ? apiKey.slice(0, 3) + "***" + apiKey.slice(-3) : ""
 );
 
+const allowedPaths = (() => {
+  if (process.env.ALLOWED_PATH) {
+    const allowedPaths = process.env.ALLOWED_PATH.split(",");
+    log("Allowed paths: %s", allowedPaths.join(", "));
+    return allowedPaths.map((path) => {
+      path = path.trim();
+      if (!path.startsWith("/")) {
+        path = "/" + path;
+      }
+      if (!path.endsWith("/")) {
+        path = path + "/";
+      }
+      return path;
+    });
+  } else {
+    return ["/"];
+  }
+})();
+
 let requestCounter = 0;
 const server = http.createServer((clientReq, clientRes) => {
   const url = new URL(clientReq.url, `http://${clientReq.headers.host}`);
@@ -64,6 +83,19 @@ const server = http.createServer((clientReq, clientRes) => {
   if (url.pathname === "/") {
     clientRes.writeHead(200, { "Content-Type": "text/plain" });
     clientRes.end("Server is running, uptime: " + process.uptime() + "s");
+    return;
+  }
+
+  // check the path
+  if (!allowedPaths.some((path) => url.pathname.startsWith(path))) {
+    clientRes.writeHead(403);
+    clientRes.end("Forbidden");
+    log(
+      "Forbidden %s %s from %s",
+      clientReq.method,
+      clientReq.url,
+      clientReq.socket.remoteAddress
+    );
     return;
   }
 
@@ -90,7 +122,7 @@ const server = http.createServer((clientReq, clientRes) => {
   };
   delete options.headers.host;
   log(
-    "Request %s %s from %s",
+    "Proxy request %s %s from %s",
     options.method,
     options.path,
     clientReq.socket.remoteAddress

@@ -7,7 +7,9 @@ A simple HTTP proxy server designed specifically for forwarding and logging Open
 - HTTP/HTTPS proxy forwarding support
 - Automatic logging of all requests and responses
 - Support for modifying model names in requests
+- Support for normalizing request format (system messages, tools, tool_choice)
 - Detailed request logging
+- Path-based access control
 
 ## Requirements
 
@@ -16,14 +18,15 @@ A simple HTTP proxy server designed specifically for forwarding and logging Open
 
 ## Environment Variables
 
-| Variable   | Description                                                                             | Default Value |
-| ---------- | --------------------------------------------------------------------------------------- | ------------- |
-| PORT       | Proxy server listening port                                                             | 8080          |
-| LOG_DIR    | Log files directory                                                                     | ./logs        |
-| LOG_STDOUT | Enable logging to stdout instead of files (values: 1/true/on)                           | false         |
-| MODEL_NAME | Model name to replace (optional)                                                        | -             |
-| API_SERVER | Target API server address (format: https://domain.com, example: https://api.openai.com) | Required      |
-| API_KEY    | OpenAI API key to override the original request (optional)                              | -             |
+| Variable     | Description                                                                             | Default Value |
+| ------------ | --------------------------------------------------------------------------------------- | ------------- |
+| PORT         | Proxy server listening port                                                             | 8080          |
+| LOG_DIR      | Log files directory                                                                     | ./logs        |
+| LOG_STDOUT   | Enable logging to stdout instead of files (values: 1/true/on)                           | false         |
+| MODEL_NAME   | Model name to replace (optional)                                                        | -             |
+| API_SERVER   | Target API server address (format: https://domain.com, example: https://api.openai.com) | Required      |
+| API_KEY      | OpenAI API key to override the original request (optional)                              | -             |
+| ALLOWED_PATH | Comma-separated list of allowed request paths (optional)                                | /             |
 
 ## Quick Start
 
@@ -40,6 +43,7 @@ export API_SERVER="https://api.openai.com"
 export PORT=8080
 export LOG_DIR="./logs"
 export MODEL_NAME="gpt-4"  # optional
+export ALLOWED_PATH="/v1/chat/completions,/v1/completions"  # optional
 ```
 
 3. Start the server:
@@ -60,6 +64,36 @@ npm start
   - Request body
   - Response headers
   - Response body
+
+## Request Format Normalization
+
+The proxy server automatically normalizes certain request formats:
+
+1. System Messages: If the request contains an array in the `system` field, it will be converted to a message with `role: "system"` and added to the beginning of the `messages` array.
+
+2. Tools Format: The tools format will be automatically converted to match OpenAI's function calling format:
+
+   ```javascript
+   // Original format
+   {
+     "tools": [{
+       "name": "get_weather",
+       "input_schema": { /* schema */ }
+     }]
+   }
+   // Converted format
+   {
+     "tools": [{
+       "type": "function",
+       "function": {
+         "name": "get_weather",
+         "parameters": { /* schema */ }
+       }
+     }]
+   }
+   ```
+
+3. Tool Choice: If `tool_choice` contains a `type` field, it will be simplified to just the type string.
 
 ## License
 
