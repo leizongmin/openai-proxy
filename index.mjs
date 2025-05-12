@@ -91,10 +91,12 @@ const server = http.createServer((clientReq, clientRes) => {
     clientRes.writeHead(403);
     clientRes.end("Forbidden");
     log(
-      "Forbidden %s %s from %s",
+      "Forbidden %s %s%s from %s, UA=%s",
       clientReq.method,
+      clientReq.headers.host || "",
       clientReq.url,
-      clientReq.socket.remoteAddress
+      clientReq.socket.remoteAddress,
+      clientReq.headers["user-agent"] || "none"
     );
     return;
   }
@@ -122,10 +124,12 @@ const server = http.createServer((clientReq, clientRes) => {
   };
   delete options.headers.host;
   log(
-    "Proxy request %s %s from %s",
+    "Proxy request %s %s%s from %s, UA=%s",
     options.method,
+    clientReq.headers.host || "",
     options.path,
-    clientReq.socket.remoteAddress
+    clientReq.socket.remoteAddress,
+    clientReq.headers["user-agent"] || "none"
   );
 
   // modify the api key
