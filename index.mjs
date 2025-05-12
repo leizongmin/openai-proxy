@@ -139,10 +139,15 @@ const server = http.createServer((clientReq, clientRes) => {
       appendLog(logFile, requestBody);
       appendLog(logFile, "\n\n--------------------\n");
       if (requestBody.length > 0) {
-        appendLog(
-          logRequestFile,
-          JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
-        );
+        try {
+          appendLog(
+            logRequestFile,
+            JSON.stringify(JSON.parse(requestBody.toString()), null, 2)
+          );
+        } catch (err) {
+          log("Request body is not json, save it as plain text");
+          appendLog(logRequestFile, requestBody.toString());
+        }
       }
 
       const proxyReq = (apiUrlIsHttps ? https : http).request(
