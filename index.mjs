@@ -69,12 +69,17 @@ const server = http.createServer((clientReq, clientRes) => {
 
   requestCounter++;
   const logFileName =
+    getDateTimeString("yyyymmdd") +
+    "/PID" +
+    process.pid +
+    "_" +
     String(requestCounter).padStart(6, "0") +
     "_" +
-    getDateTimeString("yyyymmdd_hhmmss");
+    getDateTimeString("hhmmss");
   const logFile = path.join(logDir, logFileName + ".log");
   const logRequestFile = path.join(logDir, logFileName + "_request.json");
   const logResponseFile = path.join(logDir, logFileName + "_response.jsonl");
+  fs.mkdirSync(path.dirname(logFile), { recursive: true });
 
   const options = {
     hostname: apiUrl.hostname,

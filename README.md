@@ -51,9 +51,15 @@ npm start
 ## Logging
 
 - All requests and responses are logged to the directory specified by LOG_DIR
-- Log file naming format: `sequence_YYYY-MM-DD_HHMMSS.log`
-- Request body is logged to `sequence_YYYY-MM-DD_HHMMSS_request.json`
-- Each log file contains complete request headers, request body, response headers, and response body
+- Log files are organized in daily directories (YYYYMMDD format)
+- Log file naming format: `YYYYMMDD/PID{process_id}_{sequence}_{HHMMSS}.log`
+- Request body is saved to `YYYYMMDD/PID{process_id}_{sequence}_{HHMMSS}_request.json`
+- Stream response data is saved to `YYYYMMDD/PID{process_id}_{sequence}_{HHMMSS}_response.jsonl`
+- Each log file contains:
+  - Complete request headers (with masked authorization)
+  - Request body
+  - Response headers
+  - Response body
 
 ## License
 
