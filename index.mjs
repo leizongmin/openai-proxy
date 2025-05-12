@@ -75,7 +75,7 @@ const server = http.createServer((clientReq, clientRes) => {
     "_" +
     String(requestCounter).padStart(6, "0") +
     "_" +
-    getDateTimeString("hhmmss");
+    getDateTimeString("hhiiss");
   const logFile = path.join(logDir, logFileName + ".log");
   const logRequestFile = path.join(logDir, logFileName + "_request.json");
   const logResponseFile = path.join(logDir, logFileName + "_response.jsonl");
@@ -220,7 +220,7 @@ function error(...args) {
   console.error(getDateTimeString(), util.format(...args));
 }
 
-function getDateTimeString(format = "yyyy-mm-dd hh:mm:ss", time = new Date()) {
+function getDateTimeString(format = "yyyy-mm-dd hh:ii:ss", time = new Date()) {
   const year = time.getFullYear();
   const month = String(time.getMonth() + 1).padStart(2, "0");
   const date = String(time.getDate()).padStart(2, "0");
@@ -232,6 +232,6 @@ function getDateTimeString(format = "yyyy-mm-dd hh:mm:ss", time = new Date()) {
     .replace(/mm/g, month)
     .replace(/dd/g, date)
     .replace(/hh/g, hours)
-    .replace(/mm/g, minutes)
+    .replace(/ii/g, minutes)
     .replace(/ss/g, seconds);
 }
